@@ -19,7 +19,7 @@ const DEVELOPER_LOG_CHANNEL_ID = 'YOUR_DEVELOPER_LOG_CHANNEL_ID';
 
 // Client
 const client = new Client({
-  intents: [ GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildPresences, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildModeration, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMessageReactions ],
+  intents: [ GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildPresences, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildModeration, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildWebhooks ],
   partials: [ Partials.Message, Partials.Channel, Partials.Reaction ],
   messageCacheLifetime: 25,
   messageSweepInterval: 25,
