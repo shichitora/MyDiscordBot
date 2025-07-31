@@ -9,5 +9,7 @@
 
 # 開発
 開発者：@7n6r
+
 サポートサーバー：https://discordapp.f5.si/
+
 Webサイト：https://discordbot-sctr.vercel.app/
