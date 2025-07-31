@@ -8,7 +8,7 @@
 4. 使用した場合はこのレポジトリのURLを貼る必要があります
 
 # 開発
-開発者：@7n6r
+開発者：@shichitora (Discord:@7n6r)
 
 サポートサーバー：https://discordapp.f5.si/
 
