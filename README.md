@@ -18,3 +18,5 @@ Webサイト：https://discordbot-sctr.vercel.app/
 ```pkg install nodejs```
 
 ```npm install discord.js @discordjs/voice fs/promises fs path express node-fetch dotenv axios os perf_hooks mathjs tesseract.js fluent-ffmpeg```
+
+また特権インデントを全て取得してください
