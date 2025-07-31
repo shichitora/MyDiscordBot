@@ -528,7 +528,7 @@ async function handleOperation(interaction, type, fields) {
         });
         break;
       case 'updateLog':
-        const webhookUrl = 'https://discord.com/api/webhooks/1393142638626078820/SOJgI3xCLyUqXVdGRfspxNPa6cgruO9KsHMxlfQb-Sy0z9q9LZSx12Y3HbqcLWa8Lv9n';
+        const webhookUrl = 'YOUR_WEBHOOK_ID';
         await axios.post(webhookUrl, {
           content: fields.message,
           username: 'Bot Announce',
