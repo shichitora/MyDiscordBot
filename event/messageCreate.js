@@ -95,6 +95,8 @@ async function handleLeveling(message, levels) {
 
 // StickyMessages
 async function handleStickyMessage(message, stickies) {
+  const BOT= 'YOUR_BOT_ID';
+  if (message.author.id === BOT) return;
   if (!stickies[message.guild.id]?.[message.channel.id]) return;
   const sticky = stickies[message.guild.id][message.channel.id];
   if (sticky.lastMessageId) {
