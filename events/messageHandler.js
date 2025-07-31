@@ -113,6 +113,7 @@ const isSenderWhitelisted =
 }
 
 // AntiTroll
+// 一部非公開
 if (!guildSettings.antiTroll?.enabled) return;
   let violation = null;
   if (guildSettings.duplicate?.enabled && guildSettings.antiTroll.rules.duplicate) {
