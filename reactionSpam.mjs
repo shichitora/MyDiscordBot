@@ -12,59 +12,7 @@ const bypassUserIds = new Set([
 ]);
 
 // MainHandler
-export async function handleReactionSpam(client) {
-  client.on(Events.MessageReactionAdd, async (reaction, user) => {
-    if (bypassUserIds.has(user.id)) return;
-    if (reaction.partial) {
-      try {
-        await reaction.fetch();
-      } catch (error) {
-        console.error('リアクションの取得に失敗:', error);
-        return;
-      }
-    }
-    const guildId = reaction.message.guildId;
-    const guild = reaction.message.guild;
-    const member = await guild.members.fetch(user.id).catch(() => null);
-    if (!member) return;
-    if (member.permissions.has(PermissionsBitField.Flags.Administrator)) return;
-    let settings;
-    try {
-      const data = await readFile(settingsPath, 'utf8');
-      settings = JSON.parse(data);
-    } catch (error) {
-      console.error('設定ファイルの読み込みに失敗:', error);
-      return;
-    }
-    const guildSettings = settings.guilds[guildId];
-    if (!guildSettings || !guildSettings.antiTroll?.enabled || !guildSettings.antiTroll.rules.emoji_limit?.enabled) return;
-    if (
-      guildSettings.whitelist?.channels.includes(reaction.message.channelId) ||
-      member.roles.cache.some((role) => guildSettings.whitelist?.roles.includes(role.id)) ||
-      guildSettings.whitelist?.members.includes(user.id)
-    ) return;
-    const reactionLimit = guildSettings.antiTroll.rules.emoji_limit?.limit || 5;
-    const timeframe = 5000;
-    const userReactions = reactionHistory.get(user.id) || [];
-    userReactions.push({ time: Date.now() });
-    const recentReactions = userReactions.filter((r) => Date.now() - r.time < timeframe);
-    reactionHistory.set(user.id, recentReactions);
-    if (recentReactions.length >= reactionLimit) {
-      await handleViolation(reaction, user, 'emoji_limit', guildSettings);
-      reactionHistory.set(user.id, []);
-    }
-  });
-  setInterval(() => {
-    for (const [userId, reactions] of reactionHistory) {
-      const recentReactions = reactions.filter((r) => Date.now() - r.time < 10000);
-      if (recentReactions.length === 0) {
-        reactionHistory.delete(userId);
-      } else {
-        reactionHistory.set(userId, recentReactions);
-      }
-    }
-  }, 60000);
-}
+// ここは非公開
 
 // AntiTrollViolationDone
 async function handleViolation(reaction, user, rule, settings) {
