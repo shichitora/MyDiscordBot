@@ -80,8 +80,8 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction) {
     await interaction.deferReply({ ephemeral: true });
     const guildId = interaction.guildId;
-    const supportGuildId = '1352086635998613596';
-    const betaRoleId = '1393158339386409010';
+    const supportGuildId = 'YOUR_SERVER_ID';
+    const betaRoleId = 'YOUR_ROLE_ID';
     if (guildId === supportGuildId) {
         const member = await interaction.guild.members.fetch(interaction.user.id);
         if (!member.roles.cache.has(betaRoleId)) {
