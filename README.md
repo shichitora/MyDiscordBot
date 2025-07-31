@@ -16,4 +16,5 @@ Webサイト：https://discordbot-sctr.vercel.app/
 
 # 使用する場合にターミナルで実行してください
 ```pkg install nodejs```
+
 ```npm install discord.js @discordjs/voice fs/promises fs path express node-fetch dotenv axios os perf_hooks mathjs```
