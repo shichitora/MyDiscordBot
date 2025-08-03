@@ -166,7 +166,6 @@ if (!guildSettings.antiTroll?.enabled) return;
 // 非公開
   
   if (violation) {
-    console.log(`Violation detected: ${violation} by ${message.author.tag}(${message.author.id}) - ${message.guildId}`);
     if (!isSenderWhitelisted || (commandUser && !isCommandUserWhitelisted)) {
       await handleViolation(
         message,
