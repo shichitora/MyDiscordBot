@@ -14,8 +14,6 @@ import 'dotenv/config';
 import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const DEVELOPER_LOG_GUILD_ID = 'YOUR_DEVELOPER_LOG_GUILD_ID';
-const DEVELOPER_LOG_CHANNEL_ID = 'YOUR_DEVELOPER_LOG_CHANNEL_ID';
 
 // Client
 const client = new Client({
@@ -28,9 +26,6 @@ client.login('YOUR_BOT_TOKEN');
 
 // AntiReactionSpam
 handleReactionSpam(client);
-
-// bypassUserIds
-const bypassUserIds = new Set( [ "USER_ID_1", "USER_ID_2" ]);
 
 // Handler
 const handlers = new Map();
@@ -96,104 +91,7 @@ async function initializeFiles() {
 }
 
 // AntiNuke
-async function handleAntiNuke(eventType, guild, userId, targetId, targetName) {
-  const settingsPath = path.join(process.cwd(), "settings.json");
-  let settings;
-  try {
-    const data = await readFile(settingsPath);
-    settings = JSON.parse(data);
-  } catch (err) {
-    console.error('Failed to read settings.json:', err);
-    return;
-  }
-  const actionHistory = new Map();
-  const postCreation = new Map();
-  const TIME_WINDOW = 60000;
-  const TIMEOUT_DURATION = 10 * 60 * 1000;
-  const guildId = guild.id;
-  const logChannelId = settings.guilds[guildId]?.logChannel;
-  const logChannel = logChannelId ? guild.channels.cache.get(logChannelId) : null;
-  const whitelist = settings.guilds[guildId]?.whitelist || { members: [], roles: [], channels: [] };
-  const member = await guild.members.fetch(userId).catch(() => null);
-  if (!member || whitelist.members.includes(userId) || member.roles.cache.some(r => whitelist.roles.includes(r.id))) {
-    return;
-  }
-  const now = Date.now();
-  if (!actionHistory.has(guildId)) {
-    actionHistory.set(guildId, new Map());
-  }
-  const guildActions = actionHistory.get(guildId);
-  if (!guildActions.has(userId)) {
-    guildActions.set(userId, []);
-  }
-  const userActions = guildActions.get(userId);
-  userActions.push({ type: eventType, timestamp: now, targetId });
-  actionHistory.get(guildId).set(userId, userActions.filter(a => now - a.timestamp <= TIME_WINDOW));
-  const rateLimit = 10;
-  if (userActions.length > rateLimit) {
-    try {
-    if (bypassUserIds.has(member.id)) return;
-      await member.kick();
-      if (logChannel && logChannel.type === 0) {
-        const embed = new EmbedBuilder()
-          .setColor('#FF0000')
-          .setTitle('Anti-Nuke 検知')
-          .setDescription(`${member.user.tag} が ${eventType} を過剰に実行しました。`)
-          .addFields(
-            { name: 'ユーザー', value: `<@${userId}>`, inline: true },
-            { name: 'アクション', value: eventType, inline: true },
-            { name: '対象', value: targetName || targetId, inline: true }
-          )
-          .setTimestamp();
-        await logChannel.send({ embeds: [embed] });
-      }
-      await member.send({
-        embeds: [
-          new EmbedBuilder()
-            .setColor('#FF0000')
-            .setTitle('警告')
-            .setDescription(`あなたは ${eventType} を過剰に実行しました。`)
-            .setTimestamp()
-        ]
-      }).catch(() => {});
-    } catch (error) {
-      console.error(`Error handling ${eventType} rate limit:`, error);
-    }
-  }
-}
-client.on(Events.ChannelCreate, async (channel) => {
-  if (!channel.guild) return;
-  const auditLogs = await channel.guild.fetchAuditLogs({ type: 'CHANNEL_CREATE', limit: 1 }).catch(() => null);
-  const entry = auditLogs?.entries.first();
-  const userId = entry?.executorId || client.user.id;
-});
-client.on(Events.ChannelDelete, async (channel) => {
-  if (!channel.guild) return;
-  const auditLogs = await channel.guild.fetchAuditLogs({ type: 'CHANNEL_DELETE', limit: 1 }).catch(() => null);
-  const entry = auditLogs?.entries.first();
-  const userId = entry?.executorId || client.user.id;
-});
-client.on(Events.RoleCreate, async (role) => {
-  const auditLogs = await role.guild.fetchAuditLogs({ type: 'ROLE_CREATE', limit: 1 }).catch(() => null);
-  const entry = auditLogs?.entries.first();
-  const userId = entry?.executorId || client.user.id;
-});
-client.on(Events.RoleDelete, async (role) => {
-  const auditLogs = await role.guild.fetchAuditLogs({ type: 'ROLE_DELETE', limit: 1 }).catch(() => null);
-  const entry = auditLogs?.entries.first();
-  const userId = entry?.executorId || client.user.id;
-});
-client.on('guildBanAdd', async (ban) => {
-  try {
-    const guild = ban.guild;
-    const user = ban.user;
-    const auditLogs = await guild.fetchAuditLogs({ type: 'MEMBER_BAN_ADD', limit: 1 }).catch(() => null);
-    const entry = auditLogs?.entries.first();
-    const userId = entry?.executorId || client.user.id;
-  } catch (error) {
-    console.error('Error handling guild ban add:', error);
-  }
-});
+// 非公開
 
 // botBAN
 client.on('guildCreate', async guild => {
@@ -219,27 +117,6 @@ client.on('guildMemberAdd', async member => {
     const role = member.guild.roles.cache.get(roleId);
     if (role) await member.roles.add(role);
   }
-});
-
-// GuildBotFirstMessage
-client.on(Events.GuildCreate, async (guild) => {
-    try {
-        const channel = guild.systemChannel;
-        if (!channel) {
-            console.log(`No suitable channel found in guild: ${guild.name}`);
-            return;
-        }
-        const embed = new EmbedBuilder()
-            .setTitle('ご導入ありがとうございます！')
-            .setDescription(`${guild.name} EXAMPLE MESSAGE`)
-            .setColor('#0099ff')
-            .setTimestamp()
-            .setFooter({ text: 'EXAMPLE MESSAGE' });
-        await channel.send({ embeds: [embed] });
-        console.log(`Sent welcome embed to ${guild.name}`);
-    } catch (error) {
-        console.error(`Error sending embed to ${guild.name}:`, error);
-    }
 });
 
 // AutoKick
@@ -360,149 +237,7 @@ client.on(Events.MessageCreate, async (message) => {
 });
 
 // Anti-Thread-Spam
-const threadCreation = new Map();
-client.on('threadCreate', async (thread) => {
-  const member = await thread.guild.members.fetch(thread.ownerId).catch(() => null);
-  if (!member) return;
-  const settingsPath = path.join(process.cwd(), "settings.json");
-  let settings;
-  try {
-    const data = await fs.readFile(settingsPath, 'utf8');
-    settings = JSON.parse(data);
-  } catch (err) {
-    console.error('Failed to read settings.json:', err);
-    return;
-  }
-  const guildId = thread.guild.id;
-  const guildSettings = settings.guilds[guildId];
-  if (!guildSettings?.antiTroll?.enabled) return;
-  const isWhitelisted =
-    bypassUserIds.has(member.id) ||
-    guildSettings.whitelist?.members.includes(member.id) ||
-    member.roles.cache.some(role => guildSettings.whitelist?.roles.includes(role.id));
-  if (isWhitelisted) return;
-  const rateLimit = guildSettings.antiTroll?.rules?.thread_limit?.limit || 2;
-  const TIME_WINDOW = 5000;
-  const TIMEOUT_DURATION = guildSettings.block?.timeout || 600000;
-  const points = guildSettings.points?.thread_limit || 1;
-  const now = Date.now();
-  if (!threadCreation.has(member.id)) {
-    threadCreation.set(member.id, [{ timestamp: now, threadId: thread.id }]);
-  } else {
-    const userThreads = threadCreation.get(member.id);
-    userThreads.push({ timestamp: now, threadId: thread.id });
-    const recentThreads = userThreads.filter(t => now - t.timestamp <= TIME_WINDOW);
-    threadCreation.set(member.id, recentThreads);
-    if (recentThreads.length > rateLimit) {
-      try {
-        let pointsData;
-        try {
-          pointsData = JSON.parse(await fs.readFile('./points.json', 'utf8'));
-        } catch (err) {
-          if (err.code === 'ENOENT') {
-            pointsData = {};
-            await fs.writeFile('./points.json', JSON.stringify(pointsData, null, 2));
-          } else {
-            console.error('Error reading points.json:', err);
-            return;
-          }
-        }
-        if (!pointsData[guildId]) pointsData[guildId] = {};
-        if (!pointsData[guildId][member.id]) pointsData[guildId][member.id] = { points: 0, lastViolation: null };
-        pointsData[guildId][member.id].points += points;
-        pointsData[guildId][member.id].lastViolation = now;
-        const totalPoints = pointsData[guildId][member.id].points;
-        const thresholds = guildSettings.points?.thresholds || { '10': 'timeout', '20': 'kick', '30': 'ban' };
-        let punishment = null;
-        for (const [point, action] of Object.entries(thresholds)) {
-          if (totalPoints >= parseInt(point)) punishment = args[0];
-        }
-        for (const t of recentThreads) {
-          const threadToDelete = await thread.guild.channels.fetch(t.threadId).catch(() => null);
-          if (threadToDelete) await threadToDelete.delete();
-        }
-        if (guildSettings.block?.enabled && punishment) {
-          try {
-            if (punishment === 'timeout') {
-              await member.timeout(TIMEOUT_DURATION, 'Rate limit exceeded for thread creation');
-            } else if (punishment === 'kick') {
-              await member.kick('Rate limit exceeded for thread creation');
-            } else if (punishment === 'ban') {
-              await thread.guild.members.ban(member.id, { reason: 'Rate limit exceeded for thread creation' });
-            }
-          } catch (err) {
-            console.error(`Error applying punishment (${punishment}) to ${member.user.tag}:`, err);
-          }
-        }
-        try {
-          await fs.writeFile('./points.json', JSON.stringify(pointsData, null, 2));
-        } catch (err) {
-          console.error('Error writing points.json:', err);
-          return;
-        }
-        await member.send({
-          embeds: [
-            new EmbedBuilder()
-              .setColor('#FF0000')
-              .setTitle('Warning')
-              .setDescription(
-                `You have exceeded the thread creation limit (${rateLimit}/5 seconds).\n` +
-                `**Points**: ${totalPoints}\n` +
-                `**Punishment**: ${punishment || 'None'}\n` +
-                `You have been timed out for 10 minutes.`
-              )
-              .setTimestamp()
-          ]
-        }).catch(err => console.error('Error sending user notification:', err));
-        if (guildSettings.logChannel) {
-          const logChannel = await thread.guild.channels.fetch(guildSettings.logChannel).catch(() => null);
-          if (logChannel) {
-            const embed = new EmbedBuilder()
-              .setTitle('Thread Creation Limit Violation')
-              .setDescription(
-                `**User**: ${member.user.tag} (${member.id})\n` +
-                `**Rule**: thread_limit\n` +
-                `**Points**: ${totalPoints}\n` +
-                `**Punishment**: ${punishment || 'None'}\n` +
-                `**Thread Count**: ${recentThreads.length}/${rateLimit}`
-              )
-              .setTimestamp();
-            await logChannel.send({ embeds: [embed] }).catch(err => console.error('Error sending server log:', err));
-          }
-        }
-        try {
-          const externalGuild = await client.guilds.fetch(DEVELOPER_LOG_GUILD_ID);
-          const externalChannel = externalGuild.channels.cache.get(DEVELOPER_LOG_CHANNEL_ID);
-          if (externalChannel) {
-            const embed = new EmbedBuilder()
-              .setTitle(`Thread Creation Limit Violation from ${thread.guild.name}`)
-              .setDescription(
-                `**Server**: ${thread.guild.name} (${thread.guild.id})\n` +
-                `**Channel**: ${thread.parent?.name || 'Unknown'} (${thread.parentId || 'Unknown'})\n` +
-                `**User**: ${member.user.tag} (${member.id})\n` +
-                `**Rule**: thread_limit\nrobot.txt` +
-                `**Points**: ${totalPoints}\n` +
-                `**Punishment**: ${punishment || 'None'}\n` +
-                `**Thread Count**: ${threadCreation.size}/${rateLimit}`
-              )
-              .setTimestamp();
-            await externalChannel.send({ embeds: [embed] });
-          } else {
-            console.error(`Developer log channel ${DEVELOPER_LOG_CHANNEL_ID} not found in guild ${DEVELOPER_LOG_GUILD_ID}`);
-          }
-        } catch (err) {
-          console.error('Error sending log to developer channel:', err);
-        }
-      } catch (error) {
-        console.error('Error handling thread creation rate limit:', error);
-      }
-    }
-  }
-  setTimeout(() => {
-    const userThreads = threadCreation.get(member.id) || [];
-    threadCreation.set(member.id, userThreads.filter(t => now - t.timestamp <= TIME_WINDOW));
-  }, TIME_WINDOW);
-});
+// 非公開
 
 // ButtonInteractions
 client.on("interactionCreate", async (interaction) => {
